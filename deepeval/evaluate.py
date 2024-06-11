@@ -11,7 +11,7 @@ from deepeval.utils import (
     should_use_cache,
 )
 from deepeval.telemetry import capture_evaluation_run
-from deepeval.metrics import BaseMetric
+from deepeval.metrics import BaseMetric, MetricsLoader
 from deepeval.metrics.indicator import (
     measure_metrics_with_indicator,
 )
@@ -418,7 +418,7 @@ def assert_test(
 
 def evaluate(
     test_cases: List[Union[LLMTestCase, ConversationalTestCase]],
-    metrics: List[BaseMetric],
+    metrics: Optional[List[BaseMetric]] = None,
     hyperparameters: Optional[Dict[str, Union[str, int, float]]] = None,
     run_async: bool = True,
     show_indicator: bool = True,
@@ -426,7 +426,17 @@ def evaluate(
     write_cache: bool = True,
     use_cache: bool = False,
     ignore_errors: bool = False,
+    config_path: Optional[str] = None
 ):
+    if not metrics and not config_path:
+        raise ValueError("Either metrics or a config path must be provided")
+    if metrics:
+        pass
+    else:
+        print("Loading metrics from config.")
+        metrics_evaluator = MetricsLoader(config_path=config_path)
+        metrics = metrics_evaluator.get_metrics_list()
+
     if hyperparameters is not None:
         if (
             hyperparameters.get("model") is None
